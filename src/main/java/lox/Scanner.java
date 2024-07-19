@@ -1,9 +1,6 @@
 package lox;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import java.util.*;
 import static lox.TokenType.*;
 
 public class Scanner {
@@ -14,6 +11,28 @@ public class Scanner {
     private int start = 0;
     private int current = 0;
     private int line = 1;
+
+    private static Map<String, TokenType> keyWords;
+
+    static {
+        keyWords = new HashMap<>();
+        keyWords.put("and",    AND);
+        keyWords.put("class",  CLASS);
+        keyWords.put("else",   ELSE);
+        keyWords.put("false",  FALSE);
+        keyWords.put("for",    FOR);
+        keyWords.put("fun",    FUN);
+        keyWords.put("if",     IF);
+        keyWords.put("nil",    NIL);
+        keyWords.put("or",     OR);
+        keyWords.put("print",  PRINT);
+        keyWords.put("return", RETURN);
+        keyWords.put("super",  SUPER);
+        keyWords.put("this",   THIS);
+        keyWords.put("true",   TRUE);
+        keyWords.put("var",    VAR);
+        keyWords.put("while",  WHILE);
+    }
 
     public Scanner(String source) {
         this.source = source;
@@ -51,10 +70,16 @@ public class Scanner {
             case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
             case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
             case '/':
+                // this checks if there is a / or * after first / to discard comments
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) {
                         advance();
                     }
+                } else if (match('*')) {
+                    while (peek() != '*' && !match('/') && !isAtEnd()) {
+                        advance();
+                    }
+                    advance(2);
                 } else {
                     addToken(SLASH);
                 }
@@ -65,13 +90,25 @@ public class Scanner {
                 break;
             case '\n': line++; break;
             case '"' : string(); break;
-
-            default: Lox.error(line, "Unexpected character: " + c + "."); break;
+            default:
+                if (isDigit(c)) {
+                    number();
+                } else if (isAlpha(c)) {
+                    identifier();
+                } else {
+                    Lox.error(line, "Unexpected character: " + c + ".");
+                }
+                break;
         }
     }
 
     private char advance() {
         return source.charAt(current++);
+    }
+
+    private char advance(int positions) {
+        current += positions;
+        return source.charAt(current - positions);
     }
 
     private void addToken(TokenType type) {
@@ -81,20 +118,6 @@ public class Scanner {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
-    }
-
-    private boolean match(char c) {
-        if (isAtEnd()) return false;
-        if (source.charAt(current ) != c) return false;
-        current++;
-        return true;
-    }
-
-    private char peek() {
-        if (isAtEnd()) {
-            return '\0';
-        }
-        return source.charAt(current);
     }
 
     private void string() {
@@ -115,5 +138,63 @@ public class Scanner {
         // Save the string in a token without the "
         String value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
+    }
+
+    private void number() {
+        while (isDigit(peek())) {
+            advance();
+        }
+        if (peek() == '.' && isDigit(peekNext())) {
+            advance();
+            while (isDigit(peek())) {
+                advance();
+            }
+        }
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+    }
+
+    private void identifier() {
+        while (isAlphaNumeric(peek())) {
+            advance();
+        }
+        String value = source.substring(start, current);
+        TokenType type = keyWords.get(value);
+        if (type == null) {
+            type = IDENTIFIER;
+        }
+       addToken(type);
+    }
+
+    private boolean match(char c) {
+        if (isAtEnd()) return false;
+        if (source.charAt(current ) != c) return false;
+        current++;
+        return true;
+    }
+
+    private char peek() {
+        if (isAtEnd()) {
+            return '\0';
+        }
+        return source.charAt(current);
+    }
+
+    private char peekNext() {
+        if (current + 1 >= source.length()) {
+            return '\0';
+        }
+        return source.charAt(current + 1);
+    }
+
+    private boolean isDigit(char c) {
+        return c >= '1' && c <='9';
+    }
+
+    private boolean isAlpha(char c) {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
+    }
+
+    private boolean isAlphaNumeric(char c) {
+       return isDigit(c) || isAlpha(c);
     }
 }
