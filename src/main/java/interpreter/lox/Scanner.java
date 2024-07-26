@@ -1,7 +1,7 @@
-package lox;
+package interpreter.lox;
 
 import java.util.*;
-import static lox.TokenType.*;
+import static interpreter.lox.TokenType.*;
 
 public class Scanner {
 
