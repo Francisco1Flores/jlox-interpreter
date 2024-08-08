@@ -65,6 +65,8 @@ public class Scanner {
             case '+': addToken(PLUS); break;
             case ';': addToken(SEMICOLON); break;
             case '*': addToken(STAR); break;
+            case '?': addToken(QUESTION_MARK); break;
+            case ':': addToken(COLON); break;
             case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
             case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
             case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
@@ -116,8 +118,8 @@ public class Scanner {
     }
 
     private void addToken(TokenType type, Object literal) {
-        String text = source.substring(start, current);
-        tokens.add(new Token(type, text, literal, line));
+        String lexeme = source.substring(start, current);
+        tokens.add(new Token(type, lexeme, literal, line));
     }
 
     private void string() {
@@ -187,7 +189,7 @@ public class Scanner {
     }
 
     private boolean isDigit(char c) {
-        return c >= '1' && c <='9';
+        return c >= '0' && c <='9';
     }
 
     private boolean isAlpha(char c) {

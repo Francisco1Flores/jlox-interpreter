@@ -1,0 +1,6 @@
+expression -> equality ("," equality)* |  equality
+equality -> comparison (("==" | "!=") comparison)*
+term -> factor (("<" | "=<" | ">" | "=>") factor)*
+factor -> unary (("*" | "/") unary)*
+unary -> ("-" | "!") unary | primary
+prymary -> STRING | NUMBER | "true" | "false" | "nil" | "(" expression ")"

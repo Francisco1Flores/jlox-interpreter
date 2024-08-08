@@ -1,10 +1,9 @@
 package interpreter.lox;
 
-import java.util.List;
-
 abstract class Expr {
     interface Visitor<R> {
         R visitBinaryExpr(Binary expr);
+        R visitTernaryExpr(Ternary expr);
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
         R visitUnaryExpr(Unary expr);
@@ -26,6 +25,22 @@ abstract class Expr {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpr(this);
+        }
+    }
+    static class Ternary extends Expr {
+        final Expr leftHand;
+        final Expr left;
+        final Expr right;
+
+        public Ternary(Expr leftHand, Expr left, Expr right) {
+            this.leftHand = leftHand;
+            this.left = left;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTernaryExpr(this);
         }
     }
     static class Grouping extends Expr {
