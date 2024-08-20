@@ -1,4 +1,4 @@
-package interpreter.lox;
+/*package interpreter.lox;
 
 public class AstPrinter implements Expr.Visitor<String> {
     String print(Expr expr) {
@@ -66,4 +66,4 @@ public class AstPrinter implements Expr.Visitor<String> {
         );
         System.out.println(new AstPrinter().print(expression));
     }
-}
+}*/
