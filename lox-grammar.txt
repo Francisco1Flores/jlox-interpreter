@@ -1,14 +1,19 @@
 program     -> declaration* EOF;
 declaration -> varDecl | statement;
 varDecl     -> "var" IDENTIFIER ("=" expression)? ";";
-statement   -> exprStmt | printStmt | block;
+statement   -> exprStmt | ifStmt | whileStmt | forStmt | printStmt | block;
 exprStmt    -> expression ";";
+ifStmt      -> "if" "("expression")" statement ("else" statement)?;
+whileStmt   -> "while" "(" expression ")" statement;
+forStmt     -> "for" "(" (varDecl | exprStmt | ";") ";" expression? ";" expression? ")" statement;
 printStmt   -> "print" expression ";";
 block       -> "{" declaration* "}";
 
 expression  -> assignment ("," assignment)*;
 assignment  -> IDENTIFIER "=" assignment | ternary;
-ternary     -> equality ("?" expression ":" expression)*;
+ternary     -> logicOr ("?" expression ":" expression)*;
+logicOr     -> logicAnd ("||" logicAnd)*;
+logicAnd    -> equality ("&&" equality)*;
 equality    -> comparison (("==" | "!=") comparison)*;
 comparison  -> term (("<" | "=<" | ">" | "=>") term)*;
 term        -> factor (("+" | "-") factor)*;

@@ -21,6 +21,10 @@ public class Environment {
 
     Object get(Token name) {
         if (values.containsKey(name.lexeme)) {
+            Object value = values.get(name.lexeme);
+            if (value == null) {
+                throw new RuntimeError(name, "Variable not initialized '" + name.lexeme + "'.");
+            }
             return values.get(name.lexeme);
         }
         if (enclosing != null) {
