@@ -28,7 +28,8 @@ public class GenerateAst {
                 "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
                 "While      : Expr condition, Stmt body",
                 "Print      : Expr expression",
-                "Block      : List<Stmt> statements"
+                "Block      : List<Stmt> statements",
+                "Break      : Token name"
         ));
     }
     private static void defineAst(String outputDir, String baseName, List<String> types) throws IOException {

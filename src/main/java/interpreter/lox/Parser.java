@@ -12,6 +12,7 @@ public class Parser {
 
     private final List<Token> tokens;
     private int current = 0;
+    private boolean isBreakAvailable = false;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -62,6 +63,12 @@ public class Parser {
         if (match(FOR)) {
             return forStatement();
         }
+        if (match(BREAK)) {
+            if (!isBreakAvailable) {
+                throw error(previous(), "break statement must be inside a loop structure.");
+            }
+            return breakStatement();
+        }
         return exprStatement();
     }
 
@@ -80,14 +87,16 @@ public class Parser {
         if (match(ELSE)) {
             elseBranch = statement();
         }
-        return new Stmt.If(condition, elseBranch, thenBranch);
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     private Stmt whileStatement() {
         consume(LEFT_PAREN,"Expect '(' after 'while'.");
         Expr condition = expression();
         consume(RIGHT_PAREN,"Expect ')' after condition.");
+        isBreakAvailable = true;
         Stmt body = statement();
+        isBreakAvailable = false;
         return new Stmt.While(condition, body);
     }
 
@@ -115,7 +124,9 @@ public class Parser {
         }
         consume(RIGHT_PAREN, "Expect ')' after for clauses.");
 
+        isBreakAvailable = true;
         Stmt body = statement();
+        isBreakAvailable = false;
 
         if (increment != null) {
             body = new Stmt.Block(Arrays.asList(
@@ -149,6 +160,13 @@ public class Parser {
         Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
+    }
+
+    private Stmt breakStatement() {
+        Token name = previous();
+        consume(SEMICOLON, "Expect ';' after 'break'.");
+
+        return new Stmt.Break(name);
     }
 
     private Expr expression() {

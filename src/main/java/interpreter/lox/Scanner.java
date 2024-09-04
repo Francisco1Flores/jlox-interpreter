@@ -32,6 +32,7 @@ public class Scanner {
         keyWords.put("true",   TRUE);
         keyWords.put("var",    VAR);
         keyWords.put("while",  WHILE);
+        keyWords.put("break",  BREAK);
     }
 
     public Scanner(String source) {
