@@ -2,7 +2,7 @@ program     -> declaration* EOF;
 declaration -> varDecl | funDecl | statement;
 varDecl     -> "var" IDENTIFIER ("=" expression)? ";";
 funcDecl    -> "fun" function;
-statement   -> exprStmt | ifStmt | whileStmt | forStmt | printStmt | block;
+statement   -> exprStmt | ifStmt | whileStmt | forStmt | printStmt | block | returnStmt | breakStmt;
 exprStmt    -> expression ";";
 function    -> IDENTIFIER "(" parameters? ")" block;
 ifStmt      -> "if" "("expression")" statement ("else" statement)?;
@@ -10,6 +10,7 @@ whileStmt   -> "while" "(" expression ")" statement;
 forStmt     -> "for" "(" (varDecl | exprStmt | ";") ";" expression? ";" expression? ")" statement;
 printStmt   -> "print" expression ";";
 block       -> "{" declaration* "}";
+returnStmt  -> "return" expression? ";";
 breakStmt   -> "break";
 
 expression  -> assignment ("," assignment)*;

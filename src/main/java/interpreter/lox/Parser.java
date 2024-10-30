@@ -86,6 +86,9 @@ public class Parser {
         if (match(FOR)) {
             return forStatement();
         }
+        if (match(RETURN)) {
+            return returnStmt();
+        }
         if (match(BREAK)) {
             if (!isBreakAvailable) {
                 throw error(previous(), "break statement must be inside a loop structure.");
@@ -169,7 +172,17 @@ public class Parser {
         return body;
     }
 
-    public List<Stmt> block() {
+    private Stmt returnStmt() {
+        Token keyWord = previous();
+        Expr value = null;
+        if (!check(SEMICOLON)) {
+            value = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after return value.");
+        return new Stmt.Return(keyWord, value);
+    }
+
+    private List<Stmt> block() {
         List<Stmt> statements = new ArrayList<>();
 
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
