@@ -25,7 +25,7 @@ public class Environment {
             if (value == null) {
                 throw new RuntimeError(name, "Variable not initialized '" + name.lexeme + "'.");
             }
-            return values.get(name.lexeme);
+            return value;
         }
         if (enclosing != null) {
             return enclosing.get(name);

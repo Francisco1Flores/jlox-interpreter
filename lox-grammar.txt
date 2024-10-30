@@ -1,8 +1,10 @@
 program     -> declaration* EOF;
-declaration -> varDecl | statement;
+declaration -> varDecl | funDecl | statement;
 varDecl     -> "var" IDENTIFIER ("=" expression)? ";";
+funcDecl    -> "fun" function;
 statement   -> exprStmt | ifStmt | whileStmt | forStmt | printStmt | block;
 exprStmt    -> expression ";";
+function    -> IDENTIFIER "(" parameters? ")" block;
 ifStmt      -> "if" "("expression")" statement ("else" statement)?;
 whileStmt   -> "while" "(" expression ")" statement;
 forStmt     -> "for" "(" (varDecl | exprStmt | ";") ";" expression? ";" expression? ")" statement;
@@ -12,6 +14,7 @@ breakStmt   -> "break";
 
 expression  -> assignment ("," assignment)*;
 assignment  -> IDENTIFIER "=" assignment | ternary;
+parameters  -> IDENTIFIER ("," IDENTIFIER)*;
 ternary     -> logicOr ("?" expression ":" expression)*;
 logicOr     -> logicAnd ("||" logicAnd)*;
 logicAnd    -> equality ("&&" equality)*;
