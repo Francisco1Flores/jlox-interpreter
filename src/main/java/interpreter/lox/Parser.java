@@ -12,8 +12,12 @@ public class Parser {
 
     private final List<Token> tokens;
     private int current = 0;
+
     private boolean isBreakAvailable = false;
     private boolean isInsideParen = false;
+
+    private boolean isFunction = false;
+
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -29,7 +33,10 @@ public class Parser {
     private Stmt declaration() {
         try {
             if (match(FUN)) {
-                return function("function");
+                isFunction = true;
+                if (match(IDENTIFIER)) {
+                    return function("function");
+                }
             }
             if (match(VAR)) {
                 return varDeclaration();
@@ -42,26 +49,15 @@ public class Parser {
     }
 
     private Stmt function(String kind) {
-        Token name = consume(IDENTIFIER, "Expect " + kind + "name.");
-        consume(LEFT_PAREN, "Expect '(' after " + kind + "name.");
-        List<Token> parameters = new ArrayList<>();
-        if (!check(RIGHT_PAREN)) {
-            do {
-                if (parameters.size() >= 255) {
-                    error(peek(), "can't have more than 255 parameters.");
-                }
-                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
-            } while (match(COMMA));
-        }
-        consume(RIGHT_PAREN, "Expect ')' after parameters");
-        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
 
-        List<Stmt> body = block();
-        return new Stmt.Function(name, parameters, body);
+        Token name = previous();
+
+        Expr function = expression();
+        return new Stmt.Function(name, function);
     }
 
     private Stmt varDeclaration() {
-        Token name = consume(IDENTIFIER, "Expect identifier after 'var'");
+        Token name = consume(IDENTIFIER, "Expect identifier after 'var'.");
         Expr initializer = null;
         if (match(EQUAL)) {
             initializer = expression();
@@ -341,7 +337,14 @@ public class Parser {
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);
         }
+        if (match(FUN)) {
+            consume(LEFT_PAREN,"Expect '(' after 'fun'.");
+            return anonymousFunction();
+        }
         if (match(LEFT_PAREN)) {
+            if (isFunction) {
+                return anonymousFunction();
+            }
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
@@ -354,6 +357,23 @@ public class Parser {
             return new Expr.Literal(null);
         }
         throw error(peek(), "Expect expression.");
+    }
+
+    private Expr anonymousFunction() {
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "can't have more than 255 parameters.");
+                }
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters");
+        consume(LEFT_BRACE, "Expect '{' before function  body.");
+        isFunction = false;
+        List<Stmt> body = block();
+        return new Expr.AnFunction(parameters, body);
     }
 
     private Expr finishCall(Expr callee) {

@@ -45,13 +45,11 @@ abstract class Stmt {
     }
     static class Function extends Stmt {
         final Token name;
-        final List<Token> parameters;
-        final List<Stmt> body;
+        final Expr function;
 
-        public Function(Token name, List<Token> parameters, List<Stmt> body) {
+        public Function(Token name, Expr function) {
             this.name = name;
-            this.parameters = parameters;
-            this.body = body;
+            this.function = function;
         }
 
         @Override

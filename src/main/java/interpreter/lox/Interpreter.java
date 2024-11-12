@@ -35,7 +35,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             for (Stmt statement : statements) {
                 if (statement instanceof Stmt.Expression) {
                     Expr expression = ((Stmt.Expression) statement).expression;
-                    System.out.println(evaluate(expression));
+                    Object resultExpr =  evaluate(expression);
+                    if (resultExpr != null) {
+                        System.out.println(evaluate(expression));
+                    }
                 } else {
                     execute(statement);
                 }
@@ -126,6 +129,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitAnFunctionExpr(Expr.AnFunction expr) {
+        return new LoxFunction(null, expr,environment);
+    }
+
+    @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
         return expr.value;
     }
@@ -177,8 +185,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt, environment);
-        environment.define(stmt.name.lexeme, function);
+        LoxFunction function = new LoxFunction(stmt.name.lexeme, (Expr.AnFunction)stmt.function, environment);
+        if (stmt.name.lexeme != null) {
+            environment.define(stmt.name.lexeme, function);
+        }
         return null;
     }
 
@@ -234,6 +244,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
+        if (environment.variableExist(stmt.name)) {
+            throw new RuntimeError(stmt.name,"Variable '"+ stmt.name.lexeme +"' already exist in scope.");
+        }
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);

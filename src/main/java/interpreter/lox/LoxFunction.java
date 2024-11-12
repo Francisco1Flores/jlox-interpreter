@@ -4,12 +4,14 @@ import java.util.List;
 
 public class LoxFunction implements LoxCallable {
 
-    private final Stmt.Function declaration;
+    private final Expr.AnFunction declaration;
     private final Environment closure;
+    private final String name;
 
-    public LoxFunction(Stmt.Function declaration, Environment closure) {
+    public LoxFunction(String name, Expr.AnFunction declaration, Environment closure) {
         this.declaration = declaration;
         this.closure = closure;
+        this.name = (name == null ? "anonymous" : name);
     }
 
     @Override
@@ -33,6 +35,6 @@ public class LoxFunction implements LoxCallable {
 
     @Override
     public String toString() {
-        return "<fn " + declaration.name.lexeme + ">";
+        return "<fn " + name + ">";
     }
 }

@@ -4,7 +4,7 @@ varDecl     -> "var" IDENTIFIER ("=" expression)? ";";
 funcDecl    -> "fun" function;
 statement   -> exprStmt | ifStmt | whileStmt | forStmt | printStmt | block | returnStmt | breakStmt;
 exprStmt    -> expression ";";
-function    -> IDENTIFIER "(" parameters? ")" block;
+function    -> IDENTIFIER anFunction;
 ifStmt      -> "if" "("expression")" statement ("else" statement)?;
 whileStmt   -> "while" "(" expression ")" statement;
 forStmt     -> "for" "(" (varDecl | exprStmt | ";") ";" expression? ";" expression? ")" statement;
@@ -13,6 +13,7 @@ block       -> "{" declaration* "}";
 returnStmt  -> "return" expression? ";";
 breakStmt   -> "break";
 
+anFunction    -> "(" parameters ")" block;
 expression  -> assignment ("," assignment)*;
 assignment  -> IDENTIFIER "=" assignment | ternary;
 parameters  -> IDENTIFIER ("," IDENTIFIER)*;

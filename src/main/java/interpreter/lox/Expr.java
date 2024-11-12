@@ -13,6 +13,7 @@ abstract class Expr {
         R visitLiteralExpr(Literal expr);
         R visitCallExpr(Call expr);
         R visitGroupingExpr(Grouping expr);
+        R visitAnFunctionExpr(AnFunction expr);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -143,6 +144,20 @@ abstract class Expr {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitGroupingExpr(this);
+        }
+    }
+    static class AnFunction extends Expr {
+        final List<Token> parameters;
+        final List<Stmt> body;
+
+        public AnFunction(List<Token> parameters, List<Stmt> body) {
+            this.parameters = parameters;
+            this.body = body;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAnFunctionExpr(this);
         }
     }
 }
