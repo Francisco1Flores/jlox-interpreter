@@ -11,6 +11,7 @@ import java.util.List;
 import static interpreter.lox.TokenType.*;
 
 public class Lox {
+
     private static final Interpreter interpreter = new Interpreter();
 
     static boolean hadError = false;
@@ -61,6 +62,14 @@ public class Lox {
         if (hadError) {
             return;
         }
+
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        if (hadError) {
+            return;
+        }
+
         interpreter.interpret(statements);
     }
 

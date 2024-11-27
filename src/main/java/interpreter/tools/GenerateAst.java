@@ -25,6 +25,7 @@ public class GenerateAst {
                 "AnFunction : List<Token> parameters, List<Stmt> body"
         ));
         defineAst(outputDir, "Stmt", Arrays.asList(
+                "Class      : Token name, List<Stmt.Function> methods",
                 "Var        : Token name, Expr initializer",
                 "Expression : Expr expression",
                 "Function   : Token name, Expr function",
