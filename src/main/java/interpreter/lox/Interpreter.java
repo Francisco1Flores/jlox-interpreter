@@ -37,15 +37,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
-                if (statement instanceof Stmt.Expression) {
-                    Expr expression = ((Stmt.Expression) statement).expression;
-                    Object resultExpr =  evaluate(expression);
-                    if (resultExpr != null) {
-                        System.out.println(evaluate(expression));
-                    }
-                } else {
-                    execute(statement);
-                }
+                execute(statement);
             }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
@@ -128,13 +120,31 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitSetExpr(Expr.Set expr) {
+        Object object = evaluate(expr.object);
+
+        if (!(object instanceof LoxInstance)) {
+            throw new RuntimeError(expr.name, "Only instances have fields.");
+        }
+
+        Object value = evaluate(expr.value);
+        ((LoxInstance)object).set(expr.name, value);
+        return value;
+    }
+
+    @Override
+    public Object visitThisExpr(Expr.This expr) {
+        return lookUpVariable(expr.keyword, expr);
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
 
     @Override
     public Object visitAnFunctionExpr(Expr.AnFunction expr) {
-        return new LoxFunction(null, expr,environment);
+        return new LoxFunction(null, null, expr,environment, false);
     }
 
     @Override
@@ -162,6 +172,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitGetExpr(Expr.Get expr) {
+        Object object = evaluate(expr.object);
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance)object).get(expr.name);
+        }
+
+        throw new RuntimeError(expr.name, "Only instances have properties.");
+    }
+
+    @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
 
@@ -184,13 +204,22 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
-        evaluate(stmt.expression);
+        Object result = evaluate(stmt.expression);
+        if (Lox.promptmode) {
+            System.out.println(result);
+        }
         return null;
     }
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt.name.lexeme, (Expr.AnFunction)stmt.function, environment);
+        LoxFunction function = new LoxFunction(
+                stmt.name.lexeme,
+                stmt.kind,
+                (Expr.AnFunction)stmt.function,
+                environment,
+                false);
+
         if (stmt.name.lexeme != null) {
             environment.define(stmt.name.lexeme, function);
         }
@@ -244,6 +273,27 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitPrintStmt(Stmt.Print stmt) {
         Object value = evaluate(stmt.expression);
         System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        environment.define(stmt.name.lexeme, null);
+
+        Map<String, LoxFunction> methods = new HashMap<>();
+        for (Stmt.Function method : stmt.methods) {
+            LoxFunction function = new LoxFunction(
+                        method.name.lexeme,
+                        method.kind,
+                        (Expr.AnFunction) method.function,
+                        environment,
+                        method.name.lexeme.equals("init")
+            );
+            methods.put(method.name.lexeme, function);
+        }
+
+        LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+        environment.assign(stmt.name, klass);
         return null;
     }
 
@@ -337,7 +387,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (left instanceof Double && right instanceof Double) {
             return;
         }
-        throw new RuntimeError(operator, "Operands must be a numbers.");
+        throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
     private boolean isTruthy(Object object) {

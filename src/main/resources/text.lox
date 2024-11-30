@@ -1,10 +1,11 @@
-var a = "global";
-{
-  var b = fun () {
-    print a;
-  };
+class Hola {
+    sayHola() {
+        print "hola messi como estas?";
+    }
 
-  b();
-  var a = "block";
-  b();
+    siDiosQuiere() {
+        print this;
+    }
 }
+
+Hola.sayHola();

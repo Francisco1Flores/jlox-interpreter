@@ -16,6 +16,7 @@ public class Lox {
 
     static boolean hadError = false;
     static boolean hadRuntimeError = false;
+    static boolean promptmode = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -40,16 +41,29 @@ public class Lox {
     }
 
     private static void runPrompt() throws IOException {
+        promptmode = true;
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
         for (;;) {
             System.out.print(">>");
             String line = reader.readLine();
+            if (line.equals("exit")) {
+                System.out.println("Chau puto");
+                System.exit(0);
+            }
             if (line == null) {
                 break;
             }
             run(line);
+            if (hadError || hadRuntimeError) {
+                try {
+                    Thread.sleep(500l);
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
             hadError = false;
+            hadRuntimeError = false;
         }
     }
 
@@ -86,7 +100,7 @@ public class Lox {
     }
 
     static void runtimeError(RuntimeError error) {
-        System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+        System.err.println("[line " + error.token.line + "] Error: " + error.getMessage());
         hadRuntimeError = true;
     }
 
@@ -94,5 +108,4 @@ public class Lox {
         System.err.println("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
     }
-
 }

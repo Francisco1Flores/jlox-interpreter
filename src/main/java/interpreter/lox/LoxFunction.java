@@ -6,12 +6,21 @@ public class LoxFunction implements LoxCallable {
 
     private final Expr.AnFunction declaration;
     private final Environment closure;
+    private final String kind;
     private final String name;
 
-    public LoxFunction(String name, Expr.AnFunction declaration, Environment closure) {
+    private final boolean isInitializer;
+
+    public LoxFunction(String name,
+                       String kind,
+                       Expr.AnFunction declaration,
+                       Environment closure,
+                       boolean isInitializer) {
         this.declaration = declaration;
         this.closure = closure;
+        this.kind = (name == null ? "function" : kind);
         this.name = (name == null ? "anonymous" : name);
+        this.isInitializer = isInitializer;
     }
 
     @Override
@@ -28,13 +37,25 @@ public class LoxFunction implements LoxCallable {
         try {
             interpreter.executeBlock(declaration.body, environment);
         } catch (Return returnValue) {
+            if (isInitializer) {
+                return closure.getAt(0, "this");
+            }
             return returnValue.value;
+        }
+        if (isInitializer) {
+            return closure.getAt(0, "this");
         }
         return null;
     }
 
+    public LoxFunction bind(LoxInstance instance) {
+        Environment environment = new Environment(closure);
+        environment.define("this", instance);
+        return new LoxFunction(this.name, this.kind, declaration, environment, isInitializer);
+    }
+
     @Override
     public String toString() {
-        return "<fn " + name + ">";
+        return "<"+ kind + " " + name + ">";
     }
 }
