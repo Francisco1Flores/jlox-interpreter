@@ -1,11 +1,22 @@
 class Hola {
-    sayHola() {
-        print "hola messi como estas?";
+    init(saludo) {
+        this.saludo = saludo;
+    }
+    class statMethod(a) {
+        print a;
     }
 
-    siDiosQuiere() {
-        print this;
+    class statMethod2(a) {
+        print "2" + a;
+    }
+
+    normalMethod() {
+        print this.saludo;
     }
 }
 
-Hola.sayHola();
+var sa = Hola("hola");
+Hola.statMethod("hola metodo estatico");
+sa.normalMethod();
+Hola.statMethod("llamando metodo estatico desde instancia");
+Hola.statMethod2("llamando metodo estatico nro 2 desde instancia");

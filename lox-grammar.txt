@@ -1,6 +1,9 @@
 program     -> declaration* EOF;
+
+******* Statements *******
+
 declaration -> classDecl | varDecl | funDecl | statement;
-classDecl   -> "class" IDENTIFIER "{" function* "}";
+classDecl   -> "class" IDENTIFIER "{" ((IDENTIFIER function) | ("class" IDENTIFIER function))* "}";
 varDecl     -> "var" IDENTIFIER ("=" expression)? ";";
 funcDecl    -> "fun" IDENTIFIER function;
 statement   -> exprStmt | ifStmt | whileStmt | forStmt | printStmt | block | returnStmt | breakStmt;
@@ -13,10 +16,11 @@ block       -> "{" declaration* "}";
 returnStmt  -> "return" expression? ";";
 breakStmt   -> "break";
 
-function    -> (" parameters ")" block;
+******* Expressions *******
+
+anFunction   -> "fun" function;
 expression  -> assignment ("," assignment)*;
 assignment  -> (call ".")? IDENTIFIER "=" assignment | ternary;
-parameters  -> IDENTIFIER ("," IDENTIFIER)*;
 ternary     -> logicOr ("?" expression ":" expression)*;
 logicOr     -> logicAnd ("||" logicAnd)*;
 logicAnd    -> equality ("&&" equality)*;
@@ -27,4 +31,17 @@ factor      -> unary (("*" | "/") unary)*;
 unary       -> ("-" | "!") unary | primary;
 call        -> primary ("(" arguments? ")" | "." IDENTIFIER)*;
 primary     -> STRING | NUMBER | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
+
+******* Lexical grammar *******
+
+NUMBER      -> DIGIT+ ( "." DIGIT+ )? ;
+STRING      -> "\"" <any char except "\"">* "\"" ;
+IDENTIFIER  -> ALPHA ( ALPHA | DIGIT )* ;
+ALPHA       -> "a" ... "z" | "A" ... "Z" | "_" ;
+DIGIT       -> "0" ... "9" ;
+
+******* Utility rules *******
+
+function    -> "(" parameters ")" block;
 arguments   -> expression ("," expression)*;
+parameters  -> IDENTIFIER ("," IDENTIFIER)*;

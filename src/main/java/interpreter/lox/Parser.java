@@ -58,8 +58,8 @@ public class Parser {
         consume(LEFT_BRACE, "Expect '{' before class body.");
         List<Stmt.Function> methods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            isFunction = true;
-            methods.add((Stmt.Function)funDeclaration("method"));
+            String kind = match(CLASS) ? "static method" : "method";
+            methods.add((Stmt.Function)funDeclaration(kind));
         }
         consume(RIGHT_BRACE, "Expect '}' after class body.");
 

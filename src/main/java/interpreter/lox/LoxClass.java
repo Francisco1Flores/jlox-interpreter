@@ -3,14 +3,21 @@ package interpreter.lox;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class LoxClass implements LoxCallable {
+public class LoxClass extends LoxInstance implements LoxCallable {
     public final String name;
-    private Map<String, LoxFunction> methods = new HashMap<>();
+    private final Map<String, LoxFunction> methods;
 
     public LoxClass(String name, Map<String, LoxFunction> methods) {
+        super(null);
         this.name = name;
         this.methods = methods;
+        if (!allStatic(methods)) {
+            this.setKlass(new LoxClass(name + " meta", staticMethods(methods)));
+        } else {
+            this.setKlass(this);
+        }
     }
 
     public LoxFunction findMethod(String name) {
@@ -23,7 +30,7 @@ public class LoxClass implements LoxCallable {
 
     @Override
     public String toString() {
-        return name;
+        return "<class " + name + ">";
     }
 
     @Override
@@ -44,4 +51,22 @@ public class LoxClass implements LoxCallable {
         }
         return initializer.arity();
     }
+
+    private boolean allStatic(Map<String, LoxFunction> methods) {
+        for (var e : methods.entrySet()) {
+            if (e.getValue().getKind().equals("method")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Map<String, LoxFunction> staticMethods(Map<String, LoxFunction> methods) {
+        return methods.entrySet().stream()
+                .filter(e -> e.getValue().getKind().equals("static method"))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                                          Map.Entry::getValue));
+
+    }
+
 }

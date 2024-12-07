@@ -54,6 +54,10 @@ public class LoxFunction implements LoxCallable {
         return new LoxFunction(this.name, this.kind, declaration, environment, isInitializer);
     }
 
+    public String getKind() {
+        return kind;
+    }
+
     @Override
     public String toString() {
         return "<"+ kind + " " + name + ">";
