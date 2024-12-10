@@ -2,21 +2,19 @@ class Hola {
     init(saludo) {
         this.saludo = saludo;
     }
-    class statMethod(a) {
-        print a;
-    }
-
-    class statMethod2(a) {
-        print "2" + a;
-    }
-
-    normalMethod() {
+    hola() {
         print this.saludo;
     }
 }
+print "Ingrese su nombre";
+var nombre = read();
 
-var sa = Hola("hola");
-Hola.statMethod("hola metodo estatico");
-sa.normalMethod();
-Hola.statMethod("llamando metodo estatico desde instancia");
-Hola.statMethod2("llamando metodo estatico nro 2 desde instancia");
+print "Ingrese un numero";
+
+var number = readNumber();
+
+for (var i = 0; i < number; i = i + 1) {
+    if () {
+
+    }
+}

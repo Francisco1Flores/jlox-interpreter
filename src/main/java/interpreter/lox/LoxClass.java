@@ -6,15 +6,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class LoxClass extends LoxInstance implements LoxCallable {
+    private final LoxClass superClass;
     public final String name;
     private final Map<String, LoxFunction> methods;
 
-    public LoxClass(String name, Map<String, LoxFunction> methods) {
+    public LoxClass(String name,LoxClass superClass , Map<String, LoxFunction> methods) {
         super(null);
+        this.superClass = superClass;
         this.name = name;
         this.methods = methods;
         if (!allStatic(methods)) {
-            this.setKlass(new LoxClass(name + " meta", staticMethods(methods)));
+            this.setKlass(new LoxClass(name + " meta", superClass, staticMethods(methods)));
         } else {
             this.setKlass(this);
         }
@@ -23,6 +25,10 @@ public class LoxClass extends LoxInstance implements LoxCallable {
     public LoxFunction findMethod(String name) {
         if (methods.containsKey(name)) {
             return methods.get(name);
+        }
+
+        if (superClass != null) {
+            return superClass.findMethod(name);
         }
 
         return null;

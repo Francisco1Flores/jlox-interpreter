@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
@@ -25,6 +26,48 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             @Override
             public Object call(Interpreter interpreter, List<Object> arguments) {
                 return (double) System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
+        globals.define("read", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                Scanner scanner = new Scanner(System.in);
+                return scanner.nextLine();
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
+        globals.define("readNumber", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                Scanner scanner = new Scanner(System.in);
+                double number;
+                try {
+                    number = scanner.nextDouble();
+                } catch (Exception e) {
+                    throw new RuntimeError(null, "Cannot convert input to a number.");
+                }
+                return number;
             }
 
             @Override
@@ -133,6 +176,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitSuperExpr(Expr.Super expr) {
+        int distance = locals.get(expr);
+        LoxClass superClass = (LoxClass) environment.getAt(distance, "super");
+        LoxInstance object = (LoxInstance) environment.getAt(distance - 1, "this");
+
+        LoxFunction method = superClass.findMethod(expr.method.lexeme);
+        if (method == null) {
+            throw new RuntimeError(expr.method, "Undefined property '" + expr.method.lexeme + "'.");
+        }
+        return method.bind(object);
+    }
+
+    @Override
     public Object visitThisExpr(Expr.This expr) {
         return lookUpVariable(expr.keyword, expr);
     }
@@ -168,7 +224,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             throw new RuntimeError(expr.paren,
                     "Expected " + function.arity() + " arguments but got " + arguments.size() + ".");
         }
-        return function.call(this, arguments);
+
+        Object result;
+        try {
+            result = function.call(this, arguments);
+        } catch (Exception e) {
+            throw new RuntimeError(expr.paren, e.getMessage());
+        }
+        return result;
     }
 
     @Override
@@ -277,7 +340,21 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
+
+        Object superClass = null;
+        if (stmt.superclass != null) {
+            superClass = evaluate(stmt.superclass);
+            if (!(superClass instanceof LoxClass)) {
+                throw new RuntimeError(stmt.superclass.name, "Superclass must be a class");
+            }
+        }
+
         environment.define(stmt.name.lexeme, null);
+
+        if (stmt.superclass != null) {
+            environment = new Environment(environment);
+            environment.define("super", superClass);
+        }
 
         Map<String, LoxFunction> methods = new HashMap<>();
         for (Stmt.Function method : stmt.methods) {
@@ -291,7 +368,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             methods.put(method.name.lexeme, function);
         }
 
-        LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+        LoxClass klass = new LoxClass(stmt.name.lexeme,(LoxClass) superClass, methods);
+
+        if (superClass != null) {
+            environment = environment.enclosing;
+        }
+
         environment.assign(stmt.name, klass);
         return null;
     }
