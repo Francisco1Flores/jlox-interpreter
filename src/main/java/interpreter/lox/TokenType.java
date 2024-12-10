@@ -3,7 +3,7 @@ package interpreter.lox;
 public enum TokenType {
     // single character tokens
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE, QUESTION_MARK,
-    COMMA, DOT, MINUS, PLUS, SEMICOLON, COLON, SLASH, STAR,
+    COMMA, DOT, MINUS, PLUS, SEMICOLON, COLON, SLASH, STAR, PERCENT,
 
     // one or two character tokens
     BANG, BANG_EQUAL,

@@ -1,20 +1,17 @@
 class Hola {
-    init(saludo) {
-        this.saludo = saludo;
-    }
-    hola() {
-        print this.saludo;
-    }
-}
-print "Ingrese su nombre";
-var nombre = read();
+    class esPrimo(number) {
+        if (number == 1) return false;
 
-print "Ingrese un numero";
-
-var number = readNumber();
-
-for (var i = 0; i < number; i = i + 1) {
-    if () {
-
+        for (var i = 2; i < number; i = i + 1) {
+            if ((number % i) == 0) {
+               return false;
+            }
+        }
+        return true;
     }
 }
+
+
+var number = 100;
+
+print Hola.esPrimo(number) ? (number + " es primo.") : (number + " no es primo.");

@@ -331,7 +331,7 @@ public class Parser {
     private Expr factor() {
         Expr expr = unary();
 
-        while (match(STAR, SLASH)) {
+        while (match(STAR, SLASH, PERCENT)) {
             Token operator = previous();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
