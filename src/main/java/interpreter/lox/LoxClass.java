@@ -10,12 +10,12 @@ public class LoxClass extends LoxInstance implements LoxCallable {
     public final String name;
     private final Map<String, LoxFunction> methods;
 
-    public LoxClass(String name,LoxClass superClass , Map<String, LoxFunction> methods) {
+    public LoxClass(String name, LoxClass superClass, Map<String, LoxFunction> methods) {
         super(null);
         this.superClass = superClass;
         this.name = name;
         this.methods = methods;
-        if (!allStatic(methods)) {
+        if (!allStaticMethods(methods)) {
             this.setKlass(new LoxClass(name + " meta", superClass, staticMethods(methods)));
         } else {
             this.setKlass(this);
@@ -32,6 +32,10 @@ public class LoxClass extends LoxInstance implements LoxCallable {
         }
 
         return null;
+    }
+
+    public LoxInstance getMetaClass() {
+        return this.getKlass();
     }
 
     @Override
@@ -58,7 +62,7 @@ public class LoxClass extends LoxInstance implements LoxCallable {
         return initializer.arity();
     }
 
-    private boolean allStatic(Map<String, LoxFunction> methods) {
+    private boolean allStaticMethods(Map<String, LoxFunction> methods) {
         for (var e : methods.entrySet()) {
             if (e.getValue().getKind().equals("method")) {
                 return false;
@@ -75,4 +79,11 @@ public class LoxClass extends LoxInstance implements LoxCallable {
 
     }
 
+    private Map<String, LoxFunction> extractNonStatic(Map<String, LoxFunction> methods) {
+        return methods.entrySet().stream()
+                .filter(e -> e.getValue().getKind().equals("method"))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        Map.Entry::getValue));
+
+    }
 }

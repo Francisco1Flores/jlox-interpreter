@@ -13,6 +13,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         NONE,
         FUNCTION,
         METHOD,
+        STATIC_METHOD,
         INITIALIZER
     }
     private FunctionType currentFunction = FunctionType.NONE;
@@ -26,6 +27,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     public Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
+        beginScope();
     }
 
     @Override
@@ -84,6 +86,11 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             Lox.error(expr.keyword, "Can't use 'this' outside of a class.");
             return null;
         }
+        if (currentFunction == FunctionType.STATIC_METHOD) {
+            Lox.error(expr.keyword, "Can't access instance fields in static methods.");
+            return null;
+        }
+
         resolveLocal(expr, expr.keyword);
         return null;
     }
@@ -129,6 +136,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitAnFunctionExpr(Expr.AnFunction expr) {
+        resolveFunction(expr, FunctionType.FUNCTION);
         return null;
     }
 
@@ -162,8 +170,11 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             FunctionType declaration = FunctionType.METHOD;
             if (method.name.lexeme.equals("init")) {
                 declaration = FunctionType.INITIALIZER;
+            } else if (method.kind.equals("static method")) {
+                declaration = FunctionType.STATIC_METHOD;
             }
-            resolveFunction(method, declaration);
+
+            resolveFunction((Expr.AnFunction) method.function, declaration);
         }
         endScope();
 
@@ -197,7 +208,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         declare(stmt.name);
         define(stmt.name);
 
-        resolveFunction(stmt, FunctionType.FUNCTION);
+
+        resolveFunction((Expr.AnFunction) stmt.function, FunctionType.FUNCTION);
         return null;
     }
 
@@ -214,7 +226,6 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
         resolve(stmt.condition);
-        //resolve();
         resolve(stmt.body);
         return null;
     }
@@ -275,15 +286,15 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         }
     }
 
-    private void resolveFunction(Stmt.Function function, FunctionType type) {
+    private void resolveFunction(Expr.AnFunction function, FunctionType type) {
         FunctionType enclosingFunc = currentFunction;
         currentFunction = type;
         beginScope();
-        for (Token param : ((Expr.AnFunction)function.function).parameters) {
+        for (Token param : function.parameters) {
             declare(param);
             define(param);
         }
-        resolve(((Expr.AnFunction) function.function).body);
+        resolve(function.body);
         endScope();
         currentFunction = enclosingFunc;
     }
@@ -311,9 +322,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         scopes.push(new HashMap<String, Boolean>());
     }
 
-    private void endScope() {
+    public void endScope() {
         scopes.pop();
     }
-
-
 }

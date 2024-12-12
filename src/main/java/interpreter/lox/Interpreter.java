@@ -240,6 +240,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitGetExpr(Expr.Get expr) {
         Object object = evaluate(expr.object);
+
+        if (object instanceof LoxClass klass) {
+            return klass.getMetaClass().get(expr.name);
+        }
+
         if (object instanceof LoxInstance instance) {
             return instance.get(expr.name);
         }
@@ -368,6 +373,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         environment,
                         method.name.lexeme.equals("init")
             );
+            if (methods.containsKey(method.name.lexeme)) {
+                throw new RuntimeError(method.name, "Methods must have different names.");
+            }
             methods.put(method.name.lexeme, function);
         }
 
@@ -442,8 +450,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         } else {
             return globals.get(name);
         }
-
-
     }
 
     private String stringify(Object value) {

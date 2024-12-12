@@ -1,17 +1,6 @@
-class Hola {
-    class esPrimo(number) {
-        if (number == 1) return false;
-
-        for (var i = 2; i < number; i = i + 1) {
-            if ((number % i) == 0) {
-               return false;
-            }
-        }
-        return true;
+class Math {
+    class PI() {
+        return 3.14159;
     }
 }
 
-
-var number = 100;
-
-print Hola.esPrimo(number) ? (number + " es primo.") : (number + " no es primo.");

@@ -21,9 +21,6 @@ public class LoxInstance {
         if (method != null) {
             return method.bind(this);
         }
-        if (klass.name.contains("meta")) {
-            throw new RuntimeError(name, "Only can call static methods from classes.");
-        }
 
         throw new RuntimeError(name, "Undefined property '" + name.lexeme + "'.");
     }
@@ -35,6 +32,11 @@ public class LoxInstance {
     public void setKlass(LoxClass klass) {
         this.klass = klass;
     }
+
+    public LoxClass getKlass() {
+        return klass;
+    }
+
 
     @Override
     public String toString() {

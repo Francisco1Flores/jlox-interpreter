@@ -82,14 +82,6 @@ public class Parser {
         return new Stmt.Function(name, function, kind);
     }
 
-    /*
-    private Stmt function(String kind) {
-        Token name = previous();
-
-        Expr function = expression();
-        return new Stmt.Function(name, function);
-    } */
-
     private Stmt varDeclaration() {
         Token name = consume(IDENTIFIER, "Expect identifier after 'var'.");
         Expr initializer = null;
