@@ -1,6 +1,3 @@
-class Math {
-    class PI() {
-        return 3.14159;
-    }
-}
+import "math.lox";
 
+print math.sqr(2);

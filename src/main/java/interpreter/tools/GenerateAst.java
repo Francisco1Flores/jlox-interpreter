@@ -38,7 +38,8 @@ public class GenerateAst {
                 "Print      : Expr expression",
                 "Block      : List<Stmt> statements",
                 "Return     : Token keyWord, Expr value",
-                "Break      : Token name"
+                "Break      : Token name",
+                "Import     : Token name, Token alias"
         ));
     }
     private static void defineAst(String outputDir, String baseName, List<String> types) throws IOException {

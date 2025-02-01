@@ -46,6 +46,9 @@ public class Parser {
             if (match(VAR)) {
                 return varDeclaration();
             }
+            if (match(IMPORT)) {
+                return importDeclaration();
+            }
             return statement();
         } catch (ParseError error) {
             synchronize();
@@ -90,6 +93,17 @@ public class Parser {
         }
         consume(SEMICOLON, "Expect ';' after variable declaration.");
         return new Stmt.Var(name, initializer);
+    }
+
+    private Stmt importDeclaration() {
+        Token moduleFileName = consume(STRING, "Expect identifier after 'import'.");
+        Token alias = null;
+        if (match(AS)) {
+            alias = consume(IDENTIFIER, "Expect identifier after 'as'.");
+        }
+        consume(SEMICOLON, "Expect ';' after module import.");
+
+        return new Stmt.Import(moduleFileName, alias);
     }
 
     private Stmt statement() {

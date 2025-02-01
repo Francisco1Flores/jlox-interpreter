@@ -31,13 +31,45 @@ public class Lox {
 
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        run(new String(bytes, Charset.defaultCharset()), false);
         if (hadError) {
             System.exit(65);
         }
         if (hadRuntimeError) {
             System.exit(70);
         }
+    }
+
+    public static List<Object> runModuleFile(String path) throws IOException {
+        var find = Files.find(Paths.get("").toAbsolutePath(),
+                100,
+                (p, f) -> {
+                    if (p.getFileName() == null) {
+                        return false;
+                    }
+                    if (p.toString().contains("target")) {
+                        return false;
+                    }
+                    return p.getFileName().toString().equals(path);
+                })
+                .toList();
+
+
+
+        if (find.isEmpty()) {
+            throw new IOException("Can't find '" + path + "'.");
+        } else if (find.size() > 1) {
+            throw new IOException(find.size() + " modules named '"+ path + "' found.");
+        }
+        byte[] bytes = Files.readAllBytes(find.getFirst());
+        var mod = run(new String(bytes, Charset.defaultCharset()), true);
+        if (hadError) {
+            System.exit(65);
+        }
+        if (hadRuntimeError) {
+            System.exit(70);
+        }
+        return mod;
     }
 
     private static void runPrompt() throws IOException {
@@ -54,7 +86,7 @@ public class Lox {
             if (line == null) {
                 break;
             }
-            run(line);
+            run(line, false);
             if (hadError || hadRuntimeError) {
                 try {
                     Thread.sleep(500l);
@@ -67,14 +99,14 @@ public class Lox {
         }
     }
 
-    private static void run(String source) {
+    private static List<Object> run(String source, boolean mod) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
         List<Stmt> statements = parser.parse();
 
         if (hadError) {
-            return;
+            return null;
         }
 
         Resolver resolver = new Resolver(interpreter);
@@ -82,10 +114,14 @@ public class Lox {
         resolver.endScope();
 
         if (hadError) {
-            return;
+            return null;
         }
 
+        if (mod) {
+            return interpreter.interpretModule(statements);
+        }
         interpreter.interpret(statements);
+        return null;
     }
 
     static void error(int line, String message) {

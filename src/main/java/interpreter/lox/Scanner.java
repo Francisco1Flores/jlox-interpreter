@@ -33,6 +33,9 @@ public class Scanner {
         keyWords.put("var",    VAR);
         keyWords.put("while",  WHILE);
         keyWords.put("break",  BREAK);
+        keyWords.put("from",  FROM);
+        keyWords.put("import",  IMPORT);
+        keyWords.put("as",  AS);
     }
 
     public Scanner(String source) {

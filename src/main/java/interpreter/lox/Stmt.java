@@ -14,6 +14,7 @@ abstract class Stmt {
         R visitBlockStmt(Block stmt);
         R visitReturnStmt(Return stmt);
         R visitBreakStmt(Break stmt);
+        R visitImportStmt(Import stmt);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -154,6 +155,20 @@ abstract class Stmt {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBreakStmt(this);
+        }
+    }
+    static class Import extends Stmt {
+        final Token name;
+        final Token alias;
+
+        public Import(Token name, Token alias) {
+            this.name = name;
+            this.alias = alias;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitImportStmt(this);
         }
     }
 }

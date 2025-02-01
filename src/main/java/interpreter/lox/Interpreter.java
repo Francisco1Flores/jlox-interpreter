@@ -87,6 +87,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
     }
 
+    public List<Object> interpretModule(List<Stmt> statements) {
+        try {
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+        return List.of(globals, locals);
+    }
+
 
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
@@ -241,6 +252,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Object visitGetExpr(Expr.Get expr) {
         Object object = evaluate(expr.object);
 
+        if (object instanceof LoxModule mod) {
+            return mod.get(expr.name);
+        }
+
         if (object instanceof LoxClass klass) {
             return klass.getMetaClass().get(expr.name);
         }
@@ -314,6 +329,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitBreakStmt(Stmt.Break stmt) {
         stopLoop = true;
+        return null;
+    }
+
+    @Override
+    public Void visitImportStmt(Stmt.Import stmt) {
+        String name = (stmt.alias == null) ?
+                stmt.name.lexeme.substring(1,stmt.name.lexeme.lastIndexOf('.'))
+                : stmt.alias.lexeme;
+        environment.define(name, new LoxModule(stmt.name));
         return null;
     }
 

@@ -1,6 +1,5 @@
 package interpreter.lox;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -84,6 +83,5 @@ public class LoxClass extends LoxInstance implements LoxCallable {
                 .filter(e -> e.getValue().getKind().equals("method"))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         Map.Entry::getValue));
-
     }
 }
